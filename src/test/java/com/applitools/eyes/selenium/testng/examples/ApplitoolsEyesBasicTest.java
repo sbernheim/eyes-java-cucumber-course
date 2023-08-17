@@ -1,7 +1,5 @@
 package com.applitools.eyes.selenium.testng.examples;
 
-import java.net.URL;
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import com.applitools.eyes.BatchInfo;
@@ -19,8 +17,6 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;

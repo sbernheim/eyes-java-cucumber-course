@@ -1,8 +1,6 @@
 package com.applitools.eyes.selenium.testng.examples;
 
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import com.applitools.eyes.BatchInfo;
@@ -10,24 +8,16 @@ import com.applitools.eyes.EyesRunner;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.TestResultsSummary;
 import com.applitools.eyes.exceptions.DiffsFoundException;
-import com.applitools.eyes.selenium.BrowserType;
+import com.applitools.eyes.selenium.ClassicRunner;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.introspection.Introspect;
-import com.applitools.eyes.visualgrid.model.DeviceName;
-import com.applitools.eyes.visualgrid.model.IosDeviceInfo;
-import com.applitools.eyes.visualgrid.model.IosDeviceName;
-import com.applitools.eyes.visualgrid.model.ScreenOrientation;
-import com.applitools.eyes.visualgrid.services.RunnerOptions;
-import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import com.google.common.base.Strings;
 
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.ITestContext;
@@ -52,7 +42,6 @@ public class ApplitoolsEyesUFGTest {
     private static boolean eyesIsDisabled;
     private static boolean forceDiffs;
     private static boolean logTestResults;
-    private static int concurrency = 1;
 
     // Applitools Eyes Context objects - shared for all tests
     private static BatchInfo batch;
@@ -111,13 +100,8 @@ public class ApplitoolsEyesUFGTest {
         // An environment variable that disables all the Eyes API calls.
         forceDiffs = Boolean.parseBoolean(System.getenv().getOrDefault("FORCE_DIFFERENCES", "false"));
         
-        // An environment variable that sets UltraFast Grid concurrency.
-        // Concurrency refers to the number of visual checkpoints Applitools will perform in parallel.
-        // Warning: If you have a free account, then concurrency will be limited to 1.
-        concurrency = Integer.parseInt(System.getenv().getOrDefault("APPLITOOLS_CONCURRENCY", "5"));
-
         // Create the runner for the Ultrafast Grid.
-        runner = new VisualGridRunner(new RunnerOptions().testConcurrency(concurrency));
+        runner = new ClassicRunner();
  
         // Create a new batch for tests.
         // A batch is the collection of visual checkpoints for a test suite.
@@ -151,23 +135,6 @@ public class ApplitoolsEyesUFGTest {
 
         // Set the config batch.
         config.setBatch(batch);
-        
-        // Add 4 desktop browsers with different viewports for cross-browser testing in the Ultrafast Grid.
-        // Other browsers are also available, like Edge and IE.
-        config.addBrowser(800, 600, BrowserType.CHROME);
-        config.addBrowser(1600, 1200, BrowserType.FIREFOX);
-        config.addBrowser(1024, 768, BrowserType.SAFARI);
-        config.addBrowser(1024, 768, BrowserType.SAFARI_TWO_VERSIONS_BACK);
-
-        // Add 3 mobile emulation devices with different orientations for cross-browser testing in the Ultrafast Grid.
-        // Other mobile devices are available, including iOS.
-        //config.addDeviceEmulation(DeviceName.Pixel_5, ScreenOrientation.PORTRAIT);
-        config.addDeviceEmulation(DeviceName.OnePlus_7T, ScreenOrientation.LANDSCAPE);
-        config.addDeviceEmulation(DeviceName.Kindle_Fire_HDX, ScreenOrientation.PORTRAIT);
-        
-        // Add a mobile device running in an emulator rather than Chrome emulation of the device screen dimensions.
-        //config.addMobileDevice(new IosDeviceInfo(IosDeviceName.iPhone_14_Pro_Max, ScreenOrientation.LANDSCAPE));
-
     }
 
     @BeforeMethod
