@@ -1,6 +1,5 @@
 package com.applitools.eyes.selenium.testng.examples;
 
-import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 
 import com.applitools.eyes.BatchInfo;
@@ -20,17 +19,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testng.ITestContext;
 import org.testng.annotations.Test;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.AfterTest;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.AfterSuite;
 
 public class ApplitoolsEyesTestNGTest {
     private static final Logger log = LoggerFactory.getLogger(Introspect.thisClass());
@@ -60,45 +49,35 @@ public class ApplitoolsEyesTestNGTest {
     private Eyes eyes;
     
     // Eyes Test meta-data values
-    private String eyesTestName = "Fannie Mae Web Search";
-    private String testngTestName = "";
-    private String testSuite = "";
+    private String testName = "Fannie Mae Web Search";
 
-    @BeforeSuite
-    public void beforeSuite(ITestContext ctx) {
-        testSuite = ctx.getSuite().getName();
-        log.info("Before: Suite for {}", testSuite);
-        if (!testSuite.isBlank()) {
-            appName = (testSuite.isBlank() || testSuite.startsWith("Default suite")) ? defaultAppName : testSuite;
-        }
-    }
+    @Test
+    public void basicWebSiteTest() {
+        log.info("Start basic UI test");
 
-    @BeforeTest
-    public void beforeTest(ITestContext ctx) {
-        testngTestName = ctx.getName();
-        log.info("Before: Test for {}", testngTestName);
-    }
+        // This test covers login for the Applitools demo site, which is a dummy banking app.
+        // The interactions use typical Selenium WebDriver calls,
+        // but the verifications use one-line snapshot calls with Applitools Eyes.
+        // If the page ever changes, then Applitools will detect the changes and highlight them in the dashboard.
+        // Traditional assertions that scrape the page for text values are not needed here.
 
-    @BeforeClass
-    public void beforeClass() {
-        log.info("Before: Class for {}", Introspect.thisClass());
-        
         // Read the Applitools API key from an environment variable.
         // To find your Applitools API key:
         // https://applitools.com/tutorials/getting-started/setting-up-your-environment.html
+        //
+        // NOTE: this is not strictly required when using the eyes-selenium-java5 SDK.
         applitoolsApiKey = System.getenv("APPLITOOLS_API_KEY");
-
-        eyesServerUrl = System.getenv("APPLITOOLS_SERVER_URL");
+        
+        //eyesServerUrl = System.getenv("APPLITOOLS_SERVER_URL");
 
         // Read the headless mode setting from an environment variable.
         // Use headless mode for Continuous Integration (CI) execution.
         // Use headed mode for local development.
-        headless = Boolean.parseBoolean(System.getenv().getOrDefault("HEADLESS", "true"));
+        headless = Boolean.parseBoolean(System.getenv().getOrDefault("WEBDRIVER_HEADLESS", "true"));
+        
+        //eyesIsDisabled = Boolean.parseBoolean(System.getenv().getOrDefault("APPLITOOLS_IS_DISABLED", "false"));
 
-        // An environment variable that disables all the Eyes API calls.
-        eyesIsDisabled = Boolean.parseBoolean(System.getenv().getOrDefault("APPLITOOLS_IS_DISABLED", "false"));
-
-        // An environment variable that disables all the Eyes API calls.
+        // Switch to the V2 URL to force some diffs (set FORCE_DIFFERENCES env var to "true")
         forceDiffs = Boolean.parseBoolean(System.getenv().getOrDefault("FORCE_DIFFERENCES", "false"));
 
         // Create the runner 
@@ -108,20 +87,20 @@ public class ApplitoolsEyesTestNGTest {
         // A batch is the collection of visual checkpoints for a test suite.
         // Batches are displayed in the dashboard, so use meaningful names.
         batch = new BatchInfo(batchName);
-
+        
         // Add Property key/value pairs to group and filter batch results in the Dashboard UI.
         batch.addProperty("Environment", "LOCAL");
         batch.addProperty("Language", "Java");
         batch.addProperty("SDK", "Selenium Java5");
         batch.addProperty("Framework", "TestNG");
-        batch.addProperty("Scope", "Suite");
-        batch.addProperty("Hooks", "true");
+        batch.addProperty("Scope", "Basic");
+        batch.addProperty("Hooks", "false");
         batch.addProperty("Runner", "Classic");
 
         // Create a configuration for Applitools Eyes.
-        log.info("Before: Class for {} - APPLITOOLS creating config", Introspect.thisClass());
+        //System.out.printf("Before: Class for %s - APPLITOOLS creating config\n", this.getClass().getSimpleName());
         config = new Configuration();
-        
+
         if (!Strings.isNullOrEmpty(eyesServerUrl)) {
             log.warn("\n\n\t--------> APPLITOOLS_SERVER_URL '{}' <-------- {}\n", eyesServerUrl);
             config.setServerUrl(eyesServerUrl);
@@ -130,26 +109,17 @@ public class ApplitoolsEyesTestNGTest {
         // Set the Applitools API key so test results are uploaded to your account.
         // If you don't explicitly set the API key with this call,
         // then the SDK will automatically read the `APPLITOOLS_API_KEY` environment variable to fetch it.
-        log.info("Before: Class for {} - APPLITOOLS setting API key", Introspect.thisClass());
         config.setApiKey(applitoolsApiKey);
-        log.debug("Before: Class for {} - APPLITOOLS API key set '{}'", Introspect.thisClass(), applitoolsApiKey);
 
-        // Set the config batch.
+        // The BatchInfo is a component of the Configuration
         config.setBatch(batch);
-    }
+        //config.setDisableBrowserFetching(true);
 
-    @BeforeMethod
-    public void beforeMethod(Method testMethod, Object[] params) {
-        log.info("Before: Method for {}", testMethod.getName());
-        
-        // You can use values supplied by a DataProvider in your test name.
-        String testName = (testngTestName.isBlank() || testngTestName.startsWith("Default test")) ? testMethod.getName() : testngTestName;
-        eyesTestName = params[0].equals("mortgage rates") ? testName : String.format("%s#%s", testName, params[0]);
-
+        // Open the browser with a local ChromeDriver instance.
         ChromeOptions opts = new ChromeOptions();
         if (headless) opts.addArguments("--headless=new");
         this.driver = new ChromeDriver(opts);
-
+        
         // Set the browser window size - height, width
         driver.manage().window().setSize(new Dimension(browserHeight, browserHeight));
 
@@ -164,6 +134,8 @@ public class ApplitoolsEyesTestNGTest {
 
         // Create the Applitools Eyes object connected to the Runner and set its configuration.
         eyes = new Eyes(runner);
+
+        // The Configuration includes all the default settings for this Eyes test
         eyes.setConfiguration(config);
         
         // Add property key/value pairs to filter and group test results in the Dashboard UI.
@@ -171,8 +143,8 @@ public class ApplitoolsEyesTestNGTest {
         eyes.addProperty("Letter", "A");
         eyes.addProperty("Number", "1");
         eyes.addProperty("Boolean", "true");
-        if (params[0] != null) eyes.addProperty("Search Term", params[0].toString());
         
+        // Disable all Eyes API calls if the environment variable was set
         // An environment variable that disables all the Eyes API calls.
         if (eyesIsDisabled) {
             log.warn("\n\n\t--------> ALL APPLITOOLS EYES API CALLS ARE DISABLED!!! <-------- {}\n", eyesIsDisabled);
@@ -181,71 +153,30 @@ public class ApplitoolsEyesTestNGTest {
         
         // Open Eyes to start visual testing.
         // It is a recommended practice to set all four inputs:
-        log.info("Before: Method for {} - EYES opening eyes", eyesTestName);
         eyes.open(
-                driver,       // WebDriver object to "watch"
-                appName,      // The name of the app under test
-                eyesTestName, // The name of the test case
-                              // The viewport size for the local browser
+                driver,   // WebDriver object to "watch"
+                appName,  // The name of the app under test
+                testName, // The name of the test case
+                          // The viewport size for the local browser - width , height
                 new RectangleSize(browserWidth, browserHeight));
- 
-        log.info("Before: Method for {} - EYES opened", eyesTestName);
-     }
 
-    // Not using a DataProvider for this example
-    @Test( priority = 10, dataProvider = "loginPairs" )
-    public void Fannie_Mae_Web_Search_Test(String searchTerm) {
-        // This test covers login for the Applitools demo site, which is a dummy banking app.
-        // The interactions use typical Selenium WebDriver calls,
-        // but the verifications use one-line snapshot calls with Applitools Eyes.
-        // If the page ever changes, then Applitools will detect the changes and highlight them in the dashboard.
-        // Traditional assertions that scrape the page for text values are not needed here.
-
-        log.info("Running test '{}'", eyesTestName);
-        
-        ApplitoolsWebSiteTest.runTest(driver, eyes, forceDiffs, searchTerm);
-    }
-    
-    @DataProvider
-    public Object[][] loginPairs() {
-        return new Object[][] {
-            new Object[] {
-                    "mortgage rates"
-            }, new Object[] {
-                    "disaster relief"
-            }, new Object[] {
-                    "economic forecast"
-            }
-        };
-    }
-    
-    @AfterMethod
-    public void afterMethod(Method testMethod) {
-        log.info("After:  Method for {}", testMethod.getName());
-
-        // Quit the WebDriver instance.
-        driver.quit();
-
-        // Close Eyes to tell the server it should display the results.
-        eyes.closeAsync();
-
-        // Warning: `eyes.closeAsync()` will NOT wait for visual checkpoints to complete.
-        // You will need to check the Applitools dashboard for visual results per checkpoint.
-        // Note that "unresolved" and "failed" visual checkpoints will not cause the TestNG test to fail.
-
-        // If you want the TestNG test to wait synchronously for all checkpoints to complete, then use `eyes.close()`.
-        // If any checkpoints are unresolved or failed, then `eyes.close()` will make the TestNG test fail.
-    }
-
-    @AfterClass
-    public void afterClass() {
-         log.info("After:  Class for {}", Introspect.thisClass());
-
-        // Call runner.getAllTestResults() to close the batch and report visual differences to the console.
-        // Note that this call forces TestNG to wait synchronously for all visual checkpoints to complete.
         try {
-            // Pass true to Runner.getAllTestResults(boolean) to throw a DiffsFoundException if any test found diffs.
-            TestResultsSummary allTestResults = runner.getAllTestResults(true);
+            ApplitoolsWebSiteTest.runSingleTest(driver, eyes, forceDiffs);
+        } catch (Exception e) {
+            log.error("Ending Eyes test due to Exception : {}", e);
+            throw e;
+        } finally {
+            // Close Eyes
+            eyes.closeAsync();
+
+            // Quit the WebDriver instance.
+            driver.quit();
+
+        }
+        
+        try {
+            // Gets results of all the tests AND implicitly closes the Batch
+            TestResultsSummary allTestResults = runner.getAllTestResults(false); // pass true to throw DiffsFoundException when diffs are found!
 
             logTestResults = Boolean.parseBoolean(System.getenv().getOrDefault("LOG_DETAILED_TEST_RESULTS", "false"));
             if (logTestResults) {
@@ -253,20 +184,12 @@ public class ApplitoolsEyesTestNGTest {
             } else {
                 log.info("RESULTS: {}", allTestResults);
             }
-            
         } catch (DiffsFoundException ex) {
             log.error("Applitools Eyes tests found differences! {}", ex);
         }
-    }
 
-    @AfterTest
-    public void afterTest(ITestContext ctx) {
-        log.info("After:  Test for {}", testngTestName);
-    }
-
-    @AfterSuite
-    public void afterSuite() {
-        log.info("After:  Suite for {}", testSuite);
+        log.info("End basic example test");
+            
     }
 
 }
