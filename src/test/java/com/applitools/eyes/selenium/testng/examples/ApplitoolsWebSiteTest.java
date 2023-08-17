@@ -61,7 +61,7 @@ public class ApplitoolsWebSiteTest {
             log.info("Did not find the Accept Cookies button for this test run: CSS Selector '{}'", cookieButtonSelector);
         }
             
-        // Verify the full login page loaded correctly.
+        // Verify the Main page loaded correctly.
         if (eyes != null) eyes.check(Target.window().fully().withName("Main page"));
 
         // Click on the search button
@@ -72,7 +72,7 @@ public class ApplitoolsWebSiteTest {
         s.sendKeys(searchTerm);
         s.sendKeys(Keys.ENTER);
 
-        // Verify the full main page loaded correctly.
+        // Verify the Search Results page loaded correctly.
         if (eyes != null) eyes.check(Target.window().fully().withName("Search results"));
     }
     

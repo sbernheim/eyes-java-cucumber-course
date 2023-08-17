@@ -118,30 +118,10 @@ public class ApplitoolsEyesBasicTest {
         config.setBatch(batch);
         //config.setDisableBrowserFetching(true);
 
-        // Checks whether we will run this test on a local browser or on the Execution Cloud
-        boolean ecx = Boolean.parseBoolean(System.getenv().getOrDefault("APPLITOOLS_EXECUTION_CLOUD", "false"));
-
-        // Open the browser with a WebDriver instance - either ChromeDriver for local or RemoteWebDriver
-        // Even if this test will render checkpoints for different setups in the Ultrafast Grid,
-        // it still needs to run the test one time in a browser to capture snapshots.
-        //if (ecx) {
-            // Open the browser remotely in the Execution Cloud.
-            /*DesiredCapabilities caps = new DesiredCapabilities();
-            caps.setBrowserName("chrome");
-            log.info("Eyes tests will execute on the Applitools Self-Healing Execution Cloud! [{}]", Eyes.getExecutionCloudURL());
-            try {
-                this.driver = new RemoteWebDriver(new URL(Eyes.getExecutionCloudURL()), caps);
-            } catch (Exception e) {
-                throw new RuntimeException("Unable to connect to the Applitools Self-Healing Execution Cloud at " + Eyes.getExecutionCloudURL(), e);
-            }*/
-        //}
-        //else {
-            // Open the browser with a local ChromeDriver instance.
-            ChromeOptions opts = new ChromeOptions();
-            if (headless) opts.addArguments("--headless=new");
-            this.driver = new ChromeDriver(opts);
-            log.info("Eyes tests will execute on your local Chrome browser...");
-        //}
+        // Open the browser with a local ChromeDriver instance.
+        ChromeOptions opts = new ChromeOptions();
+        if (headless) opts.addArguments("--headless=new");
+        this.driver = new ChromeDriver(opts);
         
         // Set the browser window size - height, width
         driver.manage().window().setSize(new Dimension(browserHeight, browserHeight));
