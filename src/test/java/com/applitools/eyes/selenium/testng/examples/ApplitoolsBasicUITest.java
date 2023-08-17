@@ -337,7 +337,12 @@ public class ApplitoolsBasicUITest {
         TestResultsSummary allTestResults = runner.getAllTestResults(false);
 
         log.info("End non-eyes test");
-        log.info("RESULTS: {}", allTestResults);
+        logTestResults = Boolean.parseBoolean(System.getenv().getOrDefault("LOG_DETAILED_TEST_RESULTS", "false"));
+        if (logTestResults) {
+            ApplitoolsWebSiteTest.logTestResults(allTestResults);
+        } else {
+            log.info("RESULTS: {}", allTestResults);
+        }
     }
     
     public TestEntry en(String key, Object value) {
