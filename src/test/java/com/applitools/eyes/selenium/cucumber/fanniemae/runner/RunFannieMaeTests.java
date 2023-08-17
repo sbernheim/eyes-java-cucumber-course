@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
     },
     //tags = "@web", // A tag expression for the tests this runner will run.
     plugin = {  // A comma-delimited list of Cucumber plug-ins.
+        // See https://cucumber.io/docs/cucumber/reporting/?lang=java
         //"html:target/cucumber.html",    // html, json and pretty are built in report formatters
         //"json:target/cucumber.json",
         "pretty" 
